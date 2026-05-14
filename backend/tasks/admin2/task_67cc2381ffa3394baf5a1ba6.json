@@ -1,0 +1,20 @@
+{
+  "id": "67cc2381ffa3394baf5a1ba6",
+  "userId": "67dba75e2eafb609e8082b2f",
+  "userName": "Admin2",
+  "projectTitle": "Production Monitoring system2",
+  "description": "Production Monitoring system",
+  "deadline": "2025-03-16T00:00:00.000Z",
+  "status": "started",
+  "rationale": "helooo",
+  "completedPercentage": 50,
+  "assignedTo": [
+    {
+      "id": "67dba75e2eafb609e8082b2f",
+      "name": "Admin2",
+      "email": "admin2@gmail.com"
+    }
+  ],
+  "createdAt": "2025-03-08T11:01:21.413Z",
+  "updatedAt": "2025-04-16T11:43:39.649Z"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "67dab17db8bb4aad2dbb8991",
+  "userId": "67d133f71b54266851357af8",
+  "userName": "Armtronix",
+  "projectTitle": "Employee-Admin Website using MERN Stack",
+  "description": "Employee-Admin Website using MERN Stack",
+  "deadline": "2025-03-27T00:00:00.000Z",
+  "status": "in-progress",
+  "rationale": "",
+  "completedPercentage": 50,
+  "assignedTo": [
+    {
+      "id": "67d133f71b54266851357af8",
+      "name": "Armtronix",
+      "email": "armtronixiot@gmail.com"
+    }
+  ],
+  "createdBy": {
+    "id": "67bda687127366380ea9eff7",
+    "name": "Admin",
+    "email": "admin1@gmail.com"
+  },
+  "createdAt": "2025-03-19T11:58:53.673Z",
+  "updatedAt": "2025-05-14T07:20:35.229Z"
+}

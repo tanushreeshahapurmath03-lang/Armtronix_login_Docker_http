@@ -1,0 +1,20 @@
+{
+  "id": "67cc1bb37e2bd1f0f2a46738",
+  "userId": "67bda4242b50a15b98eb337c",
+  "userName": "emp1",
+  "projectTitle": "Temperature Humidity Monitoring system",
+  "description": "monitors temperature and humidity of the network room",
+  "deadline": "2025-03-12T00:00:00.000Z",
+  "status": "not-started",
+  "rationale": "qwert",
+  "completedPercentage": 0,
+  "assignedTo": [
+    {
+      "id": "67bda4242b50a15b98eb337c",
+      "name": "emp1",
+      "email": "emp1@gmail.com"
+    }
+  ],
+  "createdAt": "2025-03-08T10:28:03.193Z",
+  "updatedAt": "2025-03-11T05:20:21.810Z"
+}

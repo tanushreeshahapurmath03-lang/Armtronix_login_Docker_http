@@ -1,0 +1,12 @@
+{
+  "id": "67cc1bb37e2bd1f0f2a46738",
+  "userId": "67bda687127366380ea9eff7",
+  "userName": "Admin",
+  "projectTitle": "Temperature Humidity Monitoring system",
+  "description": "monitors temperature and humidity of the network room",
+  "deadline": "2025-03-12T00:00:00.000Z",
+  "completedPercentage": 50,
+  "remainingPercentage": 50,
+  "createdAt": "2025-03-08T10:28:03.193Z",
+  "updatedAt": "2025-03-10T07:19:38.042Z"
+}

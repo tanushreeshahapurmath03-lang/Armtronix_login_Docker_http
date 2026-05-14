@@ -1,0 +1,462 @@
+.dashboard-container {
+  display: flex;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+.main-content1 {
+  flex: 1;
+  padding: 2rem;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow-x: hidden;
+  justify-content: start !important;
+}
+
+.main-content1 h2 {
+  margin-top: 15px;
+  margin-bottom: 50px;
+}
+
+
+
+
+h2 {
+  text-align: center !important;
+  color: #204080;
+  font-size: 2rem;
+  position: relative;
+}
+
+
+
+.COEbutton {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(to right, #204080, #1e3a8a);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.COEbutton:hover {
+  background: linear-gradient(to right, #204080, #1e3a8a);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
+}
+
+/* Event details panel styling */
+.event-details {
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  max-height: 500px;
+  overflow-y: auto;
+
+}
+
+.event-details h3 {
+  color: #204080;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #eee;
+}
+
+.event-details ul {
+  list-style: none;
+  padding: 0;
+}
+
+.event-details ul li {
+  margin-bottom: 1rem;
+  border-left: 3px solid #204080;
+  padding-left: 1rem;
+}
+
+.event-details ul li strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #204080;
+}
+
+.event-details ul li ul {
+  margin-left: 0;
+  margin-top: 0.5rem;
+}
+
+.event-details ul li ul li {
+  background-color: #f9f9f9;
+  margin: 5px 0;
+  padding: 8px 12px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-left: none;
+  position: relative;
+  padding-left: 24px;
+}
+
+.event-details ul li ul li:before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 14px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #204080;
+}
+
+/* Styling for holiday events */
+.event-details ul li ul li:contains('Holiday') {
+  background-color: #fdffe6;
+  border-left: 3px solid #f5a623;
+}
+
+/* Responsive layout */
+@media (max-width: 768px) {
+  .main-content1 {
+    padding: 1rem;
+  }
+
+  div[style*="display: flex"] {
+    flex-direction: column;
+  }
+
+  div[style*="minWidth: '300px'"] {
+    min-width: 100% !important;
+    margin-bottom: 2rem;
+  }
+
+
+}
+
+
+
+/* Base calendar container */
+.calendar-container {
+  background-color: #d1e7ff;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 450px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.calendar-container1 {
+  background-color: #f8faff;
+  border-radius: 12px;
+  padding: 20px;
+  max-width: 450px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* Month title and navigation */
+.fc-header-toolbar {
+  margin-bottom: 15px !important;
+}
+
+.fc-toolbar-title {
+  font-size: 18px !important;
+  font-weight: bold !important;
+  color: #000 !important;
+  text-align: center !important;
+}
+
+/* Navigation buttons */
+.fc-prev-button,
+.fc-next-button {
+  background-color: transparent !important;
+  border: none !important;
+  color: #000 !important;
+  box-shadow: none !important;
+}
+
+
+
+/* Day headers */
+.fc-col-header-cell {
+  padding: 10px 0 !important;
+  font-weight: bold !important;
+  text-transform: uppercase !important;
+  font-size: 14px !important;
+}
+
+.fc-daygrid-day-number {
+  font-size: 14px !important;
+  color: #000 !important;
+  text-decoration: none !important;
+  padding: 8px !important;
+}
+
+
+
+
+
+/* Sunday colors */
+.fc-day-sun .fc-daygrid-day-number {
+  color: #e53e3e !important;
+  background-color: unset !important;
+}
+
+/* Add event form section */
+.calendar-container1 h4 {
+  color: #000;
+  font-size: 16px;
+  margin-bottom: 15px;
+  font-weight: 600;
+}
+
+
+/* Events list section */
+.event-list-container {
+  max-width: 450px;
+}
+
+.event-list-title {
+  color: #000;
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* Event date headers */
+.event-date {
+  color: #000;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 15px;
+  margin-bottom: 5px;
+}
+
+/* Event items */
+.event-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  justify-content: space-between;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  max-width: 100%;
+}
+
+.event-text {
+  flex: 1;
+  margin-right: 10px;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+}
+
+
+
+/* Event list container */
+.event-list-container {
+  width: 400px;
+  max-height: 600px;
+  /* Limit the height */
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 10px;
+  background-color: #f9f9f9;
+}
+
+/* Scroll styling */
+.event-list-scroll {
+  max-height: 550px;
+  /* Slightly smaller than the container */
+  overflow-y: auto;
+  padding-right: 10px;
+  /* Prevent scrollbar overlap */
+}
+
+/* Event Item styling */
+.event-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  word-wrap: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  max-width: 100%;
+}
+
+
+
+
+.main-content1 {
+  padding: 20px;
+  width: 100%;
+}
+
+
+table,
+.fc-scrollgrid,
+.fc-col-header,
+.fc-scroller {
+  margin-top: unset !important;
+}
+
+.fc-daygrid-day-number {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  padding: 0 !important;
+}
+
+/* Make sure the day frames take up proper height */
+.fc .fc-daygrid-day-frame {
+  height: 40px !important;
+  position: relative !important;
+}
+
+/* Override for overriding the unset display property in original CSS */
+.fc-daygrid-day-top {
+  display: block !important;
+  background-color: unset !important;
+}
+
+/* Calendar day cells */
+.fc .fc-daygrid-day {
+  border: 1px solid #e0e0e0;
+  position: relative;
+}
+
+.fc .fc-daygrid-day.fc-day-today {
+  border: 2px solid #3b82f6 !important;
+  border-radius: 50% !important;
+  background-color: unset !important;
+  color: black !important;
+  /* left: 10px !important;
+  width: 35px !important;
+  height: 40px !important;
+  display: flex !important; */
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.fc .fc-daygrid-day-top {
+  padding: 4px;
+}
+
+.holiday-indicator {
+  background-color: #00eb4a !important;
+  border-radius: 50% !important;
+  color: black !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.event-indicator {
+  background-color: #ff8800 !important;
+  border-radius: 50% !important;
+  color: black !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border: 2px solid #ff7300 !important;
+
+}
+
+.fc-daygrid-bg-harness {
+  left: 10px !important;
+  right: 10px !important;
+}
+
+
+/* Event list styles */
+.event-list-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  flex: 1;
+  min-width: 300px;
+}
+
+.event-list-title {
+  margin-top: 0;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.event-list-scroll {
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.event-date {
+  font-weight: 600;
+  color: #333;
+  margin: 10px 0 5px 0;
+  padding-bottom: 3px;
+  border-bottom: 1px dashed #eee;
+}
+
+.event-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  margin-bottom: 5px;
+  border-radius: 4px;
+}
+
+.event-item-holiday {
+  background-color: #c9f5bc;
+  border-left: 3px solid #349e03;
+}
+
+.event-item-regular {
+  background-color: #ffe3c1;
+  border-left: 3px solid #ff7300;
+}
+
+.event-bullet {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.event-item-holiday .event-bullet {
+  background-color: #349e03;
+}
+
+.event-item-regular .event-bullet {
+  background-color: #ff7300;
+}
+
+.event-text {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.delete-event-btn {
+  background: rgb(255, 91, 91);
+  border: none;
+  color: white;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 0 5px;
+}
+
+.delete-event-btn:hover {
+  color: #ffff;
+}
+
+tbody tr:hover {
+  background-color: unset !important;
+  cursor: pointer;
+}

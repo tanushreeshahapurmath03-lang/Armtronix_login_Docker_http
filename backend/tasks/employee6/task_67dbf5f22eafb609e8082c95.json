@@ -1,0 +1,25 @@
+{
+  "id": "67dbf5f22eafb609e8082c95",
+  "userId": "67dbf59b2eafb609e8082c70",
+  "userName": "Employee6",
+  "projectTitle": "Sleep Monitoring system",
+  "description": "Sleep Monitoring system",
+  "deadline": "2025-03-21T00:00:00.000Z",
+  "status": "not-started",
+  "rationale": "",
+  "completedPercentage": 0,
+  "assignedTo": [
+    {
+      "id": "67dbf59b2eafb609e8082c70",
+      "name": "Employee6",
+      "email": "emp6@gmail.com"
+    }
+  ],
+  "createdBy": {
+    "id": "67bda687127366380ea9eff7",
+    "name": "Admin",
+    "email": "admin1@gmail.com"
+  },
+  "createdAt": "2025-03-20T11:03:14.804Z",
+  "updatedAt": "2025-03-20T11:03:14.804Z"
+}

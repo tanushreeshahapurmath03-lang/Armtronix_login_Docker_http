@@ -1,0 +1,962 @@
+* {
+  color: #000;
+}
+
+.git-portal {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: "Arial", sans-serif;
+}
+
+.title {
+  text-align: center;
+  font-size: 28px;
+  color: #2563eb;
+}
+
+.description {
+  font-size: 16px;
+  color: #000;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+.section-title {
+  margin-top: 20px;
+  font-size: 22px;
+  color: #000;
+  border-bottom: 2px solid #2563eb;
+  padding-bottom: 5px;
+}
+
+.feature-list,
+.benefits-list {
+  list-style: none;
+  padding: 0;
+}
+
+.feature-list li,
+.benefits-list li {
+  font-size: 16px;
+  color: #000;
+  padding: 8px 0;
+  text-align: left;
+
+}
+
+.footer-text {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #000;
+  text-align: center;
+}
+
+.portal-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: "Arial", sans-serif;
+}
+
+.portal-title {
+  text-align: center;
+  font-size: 28px;
+  color: #1e3a8a;
+  font-weight: bolder !important;
+  padding: 20px;
+}
+
+.portal-description {
+  font-size: 16px;
+  color: #000;
+  line-height: 1.6;
+  text-align: justify;
+}
+
+.portal-section-title {
+  margin-top: 20px;
+  font-size: 22px;
+  color: #000;
+  border-bottom: 2px solid #2563eb;
+  text-align: left;
+
+  padding-bottom: 5px;
+}
+
+.portal-feature-list {
+  list-style: none;
+  padding: 0;
+}
+
+.portal-feature-list li {
+  font-size: 16px;
+  color: #000;
+  padding: 8px 0;
+  text-align: left;
+}
+
+.portal-footer {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #000;
+  text-align: center;
+}
+
+.git-commands {
+  padding-left: 25px;
+  text-align: left;
+
+}
+
+.git-commands li {
+  padding-top: 5px;
+}
+
+.github-button-container a {
+  background: linear-gradient(135deg, #4b6cb7 0%, #334872 100%);
+  width: 120px;
+  padding: 10px;
+  color: #fff;
+  text-align: center;
+  border-radius: 8px;
+  align-items: center;
+  justify-content: center;
+  justify-items: center;
+  font-weight: bold;
+}
+
+
+.github-button-container {
+  align-items: center;
+  padding: 10px;
+  text-align: center;
+  padding-top: 30px;
+}
+
+.github-button-container a:hover {
+  background-color: #413f3f;
+
+}
+
+.claim-form {
+  max-width: 900px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  font-family: Arial, sans-serif;
+}
+
+.form-title {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  margin-top: 20px;
+  color: black !important;
+
+}
+
+.form-title1 {
+  text-align: center;
+  font-size: 30px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.form-header,
+.employee-details,
+.totals,
+.approval-section {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+.employee-details {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.employee-details input {
+  width: 200px;
+}
+
+/* .approval-section {
+  display: flex;
+  flex-direction: row;
+
+} */
+
+.approval-section {
+  display: flex;
+  flex-direction: row;
+  gap: 550px; /* optional for spacing */
+  width: 100%;
+}
+
+.approval-field {
+  flex: 1;               /* ensures equal width */
+  display: flex;
+  flex-direction: column;
+}
+
+.approval-field input {
+  width: 100%;
+  box-sizing: border-box;  /* ensures padding/border don't break layout */
+}
+
+
+label {
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+input {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  height: 38px;
+}
+/* 
+.expense-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.expense-table th,
+.expense-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.totals {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 5px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+
+
+
+.final-totals {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.final-totals div {
+  width: 100%;
+  text-align: center;
+  font-size: larger;
+  padding: 8px 0;
+  color: #000000;
+}
+
+.final-totals strong {
+  color: #000000;
+  margin-right: 8px;
+} */
+
+.expense-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.expense-table th,
+.expense-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: center;
+}
+
+.totals {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: #f8f9fa;
+  border-radius: 5px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+/* .approval-section input {
+  width: 100%;
+  max-width: 450px;
+} */
+
+.final-totals {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 15px;
+  border: 1px solid #ddd;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.final-totals div {
+  width: 100%;
+  text-align: center;
+  font-size: larger;
+  padding: 8px 0;
+  color: #000000;
+}
+
+.final-totals strong {
+  color: #000000;
+  margin-right: 8px;
+}
+
+/* Delete button styles */
+.Delete-expense {
+  background-color: white;
+  color: red;
+  border: 1px solid #ff3333;
+  border-radius: 4px;
+  width: 25px;
+  height: 25px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: all 0.2s ease;
+  margin: 0 auto;
+}
+
+.Delete-expense:hover {
+  background-color: #ffe8e8;
+  color: white;
+}
+
+/* Input styles to match your table aesthetics */
+.expense-table input[type="text"],
+.expense-table input[type="number"] {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  box-sizing: border-box;
+  text-align: left;
+}
+/* 
+
+.pdf-mode {
+  font-size: 24px !important;
+  width: 100%;
+}
+
+.pdf-mode .expense-table {
+  font-size: 24px !important;
+  width: 100% !important;
+  table-layout: fixed;
+}
+
+.pdf-mode .expense-table th,
+.pdf-mode .expense-table td {
+  width: auto !important;
+}
+
+.pdf-mode input,
+.pdf-mode select,
+.pdf-mode textarea {
+  font-size: inherit !important;
+}
+
+.pdf-mode .totals,
+.pdf-mode .final-totals {
+  font-size: 22px !important;
+  font-weight: 500;
+}
+
+.pdf-mode .delete-column {
+  display: none !important;
+}
+
+
+.pdf-mode .delete-column,
+.pdf-mode .no-print {
+  display: none !important;
+}
+
+.pdf-mode .expense-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  table-layout: fixed !important;
+  margin-bottom: 10px;
+}
+
+.pdf-mode .expense-table th,
+.pdf-mode .expense-table td {
+  padding: 10px !important;
+  border: 1px solid #000 !important;
+  text-align: center;
+  vertical-align: middle;
+  word-wrap: break-word;
+}
+
+
+.pdf-mode .expense-table input[type="text"],
+.pdf-mode .expense-table input[type="number"] {
+  font-size: 14px !important; 
+  padding: 6px 8px !important; 
+  border: none !important;
+  background: transparent !important;
+  color: #000 !important;
+  text-align: left;
+  vertical-align: middle;
+  height: auto;
+  line-height: 1.5 !important;
+  box-sizing: border-box;
+}
+
+
+.pdf-mode .form-header,
+.pdf-mode .employee-details,
+.pdf-mode .totals,
+.pdf-mode .approval-section,
+.pdf-mode .final-totals {
+  font-size: 22px !important;
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
+}
+
+.pdf-mode .final-totals {
+  font-weight: bolder;
+  font-size: 28px !important;
+  text-align: right !important;
+  padding: 15px !important;
+  border: 1px solid #000 !important;
+}
+
+
+.pdf-mode .final-totals {
+  font-weight: bolder;
+  font-size: 28px !important;
+  text-align: right !important;
+  padding: 20px 25px !important;
+  border: 2px solid #333 !important;
+  background-color: #ffffff !important;
+  border-radius: 10px !important;
+  color: #000 !important;
+  margin-top: 10px !important;
+
+}
+
+
+.pdf-mode .portal-title {
+  font-weight: bolder;
+  font-size: 28px !important;  
+  text-align: center !important;
+  padding: 15px !important;
+  border: unset !important;
+}
+
+
+.pdf-mode input,
+.pdf-mode select,
+.pdf-mode textarea {
+  font-size: inherit !important;
+  border: none !important;
+  background: transparent !important;
+  color: #000 !important;
+  vertical-align: middle;
+  height: 80px; 
+  padding: 8px;
+  line-height: normal; 
+  box-sizing: border-box; 
+  overflow: visible !important; 
+
+} */
+
+.pdf-mode {
+  font-size: 20px !important;
+  width: 100% !important; /* Force 100% width */
+  max-width: none !important; /* Prevent max-width constraints */
+  box-sizing: border-box !important;
+  font-family: Arial, sans-serif;
+}
+
+.pdf-mode * {
+  box-sizing: border-box !important; /* Apply to all elements */
+}
+
+.pdf-mode .company-logo {
+  max-width: 220px !important;
+  height: auto !important;
+  margin: 0 auto 5px !important; /* Reduced bottom margin from default value */
+  display: block !important;
+}
+
+.pdf-mode .employee-details {
+  display: flex !important;
+  flex-wrap: wrap;
+  justify-content: space-between !important;
+  width: 100% !important;
+  /* margin: 10px 0 !important; */
+}
+
+.pdf-mode .expense-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  table-layout: fixed !important;
+  margin-bottom: 15px;
+  max-width: none !important; /* Prevent max-width constraints */
+}
+
+.pdf-mode .form-title {
+  font-weight: bolder;
+  font-size: 38px !important;  
+  text-align: center !important;
+  padding: 15px !important;
+  border: unset !important;
+}
+
+.pdf-mode .expense-table th,
+.pdf-mode .expense-table td {
+  padding: 5px 10px !important; /* Reduced vertical padding from 10px to 5px */
+  border: 1px solid #000 !important;
+  text-align: center;
+  vertical-align: middle;
+  word-wrap: break-word;
+  width: auto !important; /* Let cells determine their width */
+  height: auto !important; /* Let content determine height */
+  max-height: 30px !important; /* Add maximum height constraint */
+  line-height: 1.2 !important;
+}
+
+/* Better input styling with larger font */
+.pdf-mode .expense-table input[type="text"],
+.pdf-mode .expense-table input[type="number"] ,
+.pdf-mode input{
+  font-size: 20px !important;
+  padding: 6px 8px !important;
+  border: none !important;
+  background: transparent !important;
+  color: #000 !important;
+  text-align: left;
+  vertical-align: middle;
+  height: auto !important;
+  line-height: 1.4 !important;
+  box-sizing: border-box !important;
+  width: 100% !important; /* Force inputs to take full width */
+}
+
+/* Form container width enforcement */
+.pdf-mode .form-container {
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 800px !important; /* Minimum width to prevent shrinking */
+}
+
+/* Final totals section - prevent this from affecting overall width */
+.pdf-mode .final-totals {
+  font-weight: bold;
+  font-size: 22px !important;
+  text-align: right !important;
+  padding: 12px 18px !important;
+  border: 1px solid #333 !important;
+  background-color: #ffffff !important;
+  border-radius: 5px !important;
+  color: #000 !important;
+  margin-top: 18px !important;
+  width: 100% !important;
+  /* margin-left: auto !important; */
+  box-sizing: border-box !important;
+  float: center !important; /* Position right without affecting layout flow */
+  clear: both !important;
+}
+
+.pdf-mode .final-totals1 {
+  font-weight: bold;
+  font-size: 32px !important;
+  text-align: center !important;
+}
+
+.pdf-mode .totals{
+  gap: 2px;
+  align-items: center;
+  text-align: center;
+}
+
+.pdf-mode .approval-section{
+  gap: 400px;
+}
+
+
+/* Override any media queries that might be affecting width */
+@media all {
+  .pdf-mode {
+    width: 100% !important;
+    max-width: none !important;
+  }
+  
+  .pdf-mode .expense-table {
+    width: 100% !important;
+  }
+}
+
+/* Print optimization */
+@media print {
+  body, html {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .pdf-mode {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+}
+
+.download-btn,.reset-btn, .submit-btn,
+.add-expense-btn{
+  padding: 12px 24px;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+  color: white;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-self: center;
+  align-content: center;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  border: none;
+  min-width: 100px;
+  transition: background-color 0.3s ease;
+}
+
+.add-expense-btn{
+  margin-top: 10px;
+}
+.submit-btn {
+  padding: 12px 24px;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+  color: white;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-self: center;
+  align-content: center;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  border: none;
+  min-width: 50px !important;
+  transition: background-color 0.3s ease;
+}
+
+
+
+.add-expense-container {
+  display: flex;
+  gap: 25px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding-top: 15px;
+}
+
+.add-expense-btn,
+.claimform,
+.pay-details, .reports {
+  padding: 12px 24px;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #4b6cb7 0%, #334872 100%);
+  color: white;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  text-align: center;
+  border: none;
+  transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 200px;
+}
+
+.add-expense-btn:hover {
+  background-color: #084d5a;
+}
+
+
+.download-btn:hover,
+.submit-btn:hover, .reset-btn:hover {
+  background-color: #413f3f;
+  color: #ffffff;
+}
+
+.main-content1 {
+  display: flex;
+  flex: 1;
+  width: 100%;
+  padding: 30px;
+  background: white;
+  border-radius: 10px;
+  margin: 20px;
+  align-items: center !important;
+  justify-content: center !important;
+  justify-items: center !important;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.contact {
+  flex: 0 0 60%;
+  width: 100%;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: auto;
+}
+
+.contact h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  color: #1e3a8a !important;
+}
+
+.contact p {
+  text-align: center;
+  font-size: 1rem;
+  margin-bottom: 30px;
+  color: #000;
+}
+
+.contact .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.contact label {
+  font-size: 1.1rem;
+  color: #000;
+  font-weight: bold;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.contact input,
+.contact textarea {
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+
+
+.contact textarea {
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  resize: vertical;
+  min-height: 150px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* .submit-button-container {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin-top: clamp(5px, 3vw, 2px);
+}
+
+.submit-btn {
+  transition: background-color 0.3s ease;
+  width: clamp(150px, 10%, 300px);
+}
+
+
+@media (max-width: 768px) {
+  .submit-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .submit-btn {
+    width: 90%;
+    font-size: 1rem;
+  }
+} */
+
+.main-content1 {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  flex: 1;
+  padding: 30px;
+  background: white;
+  border-radius: 10px;
+  margin: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.main-content1 h2 {
+  text-align: left;
+  align-items: start;
+  width: 100%;
+  color: #1e3a8a;
+  margin-bottom: 20px;
+}
+
+.main-content1 p {
+  text-align: left;
+  align-items: start;
+  width: 100%;
+  font-size: 16px;
+  color: #000;
+  padding: 10px;
+  background: #f1f5f9;
+  margin-bottom: 10px;
+}
+
+.e1 {
+  background: #ffffff;
+  margin-top: 20px;
+  padding: 20px;
+  border-radius: 8px;
+  width: 100%;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.e1 h3 {
+  color: #1e3a8a;
+  font-size: 22px;
+  margin-bottom: 10px;
+}
+
+.e1 h4 {
+  color: #1e3a8a;
+  font-size: 18px;
+  margin-bottom: 10px;
+  margin-top: 10px;
+
+}
+
+
+.e1 p {
+  font-size: 16px;
+  margin-bottom: 10px;
+}
+
+.e1 ul {
+  list-style: none;
+  padding-left: 20px;
+}
+
+.e1 ul li {
+  font-size: 16px;
+  padding: 8px 0;
+  position: relative;
+}
+
+.e1 ul li::before {
+  content: "✔";
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    width: 200px;
+  }
+}
+
+@media (max-width: 600px) {
+  .sidebar {
+    display: none;
+  }
+
+  .main-content {
+    margin-left: 0;
+    padding: 20px;
+  }
+
+  .header1 {
+    justify-content: center;
+    text-align: center;
+  }
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    max-width: 100%;
+    padding: 15px;
+  }
+
+  .title, .portal-title, .form-title {
+    font-size: 1.5rem;
+  }
+
+
+}
+
+@media (max-width: 480px) {
+  .title, .portal-title, .form-title {
+    font-size: 1.25rem;
+  }
+
+  .description, .portal-description {
+    font-size: 0.9rem;
+  }
+
+  .section-title, .portal-section-title {
+    font-size: 1.25rem;
+  }
+}
+

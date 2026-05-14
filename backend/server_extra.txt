@@ -1,0 +1,1242 @@
+// Integrated server.js
+const express = require('express');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const cors = require('cors');
+const { Server } = require("socket.io");
+const { createServer } = require("http");
+const nodemailer = require("nodemailer");
+require('dotenv').config();
+const multer = require('multer');
+// const upload = multer({ dest: 'uploads/' });
+const path = require('path');
+const fs = require('fs');
+const app = express();
+const server = createServer(app);
+
+// Environment variables
+const FRONTEND_URL = process.env.VITE_FRONTEND_URL || "http://192.168.1.220:5176";
+const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
+const PORT = process.env.PORT || process.env.VITE_BACKEND_PORT || 5002;
+
+// Socket.io setup
+const io = new Server(server, {
+  cors: {
+    origin: [FRONTEND_URL, "http://localhost:5176"],
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
+
+// Middleware
+app.use(cors({
+  origin: [FRONTEND_URL, "http://localhost:5176"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Allow these methods
+  credentials: true
+}));
+app.use(express.json());
+
+// Connect to MongoDB
+const mongoURI = process.env.VITE_MONGO_URI || process.env.MONGODB_URI || 'mongodb://localhost:27017/employee-auth';
+mongoose.connect(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+  .then(() => console.log('✅ Connected to MongoDB successfully!'))
+  .catch(err => {
+    console.error('❌ MongoDB connection error:', err);
+    process.exit(1);
+  });
+
+// // User Model
+// const userSchema = new mongoose.Schema({
+//   name: { type: String},
+//   email: { type: String, required: true, unique: true },
+//   password: { type: String, required: true },
+//   role: { type: String, enum: ['employee', 'manager', 'admin'], default: 'employee' },
+//   requirePasswordChange: { type: Boolean, default: true },
+//   createdAt: { type: Date, default: Date.now }
+// });
+
+// const User = mongoose.model('User', userSchema);
+
+// Enhanced User Model
+const userSchema = new mongoose.Schema({
+  name: { type: String, default: '' },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['employee', 'manager', 'admin'], default: 'employee' },
+  phone: { type: String, default: '' },
+  address: { type: String, default: '' },
+  BloodGroup: { type: String, default: '' },
+  profileImage: { type: String, default: '' },
+  teams: [{ type: String, default: [] }],
+  requirePasswordChange: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+const User = mongoose.model('User', userSchema);
+
+const authMiddleware = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+
+    const user = await User.findById(decoded.userId || decoded.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    req.user = user;
+    console.log('Authenticated user:', user); // Add logging
+    next();
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    res.status(401).json({ message: 'Invalid token' });
+  }
+};
+
+// Enhanced Profile Routes
+// Update the existing profile route to include new fields
+app.get('/api/user/profile', authMiddleware, (req, res) => {
+  res.json({
+    id: req.user._id,
+    name: req.user.name || '',
+    email: req.user.email,
+    role: req.user.role,
+    phone: req.user.phone || '',
+    address: req.user.address || '',
+    BloodGroup: req.user.BloodGroup || '',
+    profileImage: req.user.profileImage || '',
+    teams: req.user.teams || []
+  });
+});
+
+// Add a new route to update profile information
+app.put('/api/user/profile', authMiddleware, async (req, res) => {
+  try {
+    const { name, phone, address, BloodGroup } = req.body;
+
+    // Update user profile
+    const updatedFields = {};
+    if (name) updatedFields.name = name;
+    if (phone) updatedFields.phone = phone;
+    if (address) updatedFields.address = address;
+    if (BloodGroup) updatedFields.BloodGroup = BloodGroup;
+
+
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updatedFields },
+      { new: true }
+    );
+
+    res.json({
+      id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      phone: updatedUser.phone || '',
+      address: updatedUser.address || '',
+      BloodGroup: updatedUser.BloodGroup || '',
+      profileImage: updatedUser.profileImage || '',
+      teams: updatedUser.teams || []
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+
+// Create uploads directory if it doesn't exist
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+// Configure multer storage
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    // Create unique filename with original extension
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, 'profile-' + uniqueSuffix + ext);
+  }
+});
+
+// File filter to only allow images
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Not an image! Please upload only images.'), false);
+  }
+};
+
+// Setup the multer upload object
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5 MB limit
+  },
+  fileFilter: fileFilter
+});
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// Update the existing image upload route
+app.post('/api/user/profile/image', authMiddleware, upload.single('profileImage'), async (req, res) => {
+  try {
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).json({ message: 'No image file uploaded' });
+    }
+
+    // Create the full URL path for the image
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+
+    // Update user with new image URL
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      { profileImage: imageUrl },
+      { new: true }
+    );
+
+    res.json({
+      message: 'Profile image updated successfully',
+      profileImage: updatedUser.profileImage
+    });
+  } catch (error) {
+    console.error('Upload profile image error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get attendance information route
+app.get('/api/user/attendance', authMiddleware, async (req, res) => {
+  try {
+    // Fetch leave requests to calculate attendance
+    const leaveRequests = await LeaveRequest.find({ email: req.user.email });
+    const approvedLeaves = leaveRequests.filter(leave => leave.status === 'Approved');
+
+    const totalLeaves = 10; // This would ideally be configured per role/policy
+    const leavesTaken = approvedLeaves.length;
+
+    res.json({
+      totalLeaves,
+      leavesTaken,
+      leavesRemaining: totalLeaves - leavesTaken,
+      leaveHistory: leaveRequests.map(leave => ({
+        id: leave._id,
+        date: new Date(leave.timestamp).toISOString().split('T')[0],
+        type: leave.subject,
+        status: leave.status
+      }))
+    });
+  } catch (error) {
+    console.error('Fetch attendance error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Leave Request Model
+const leaveSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  subject: String,
+  message: String,
+  status: { type: String, default: "Pending" },
+  timestamp: { type: Date, default: Date.now }
+});
+
+const LeaveRequest = mongoose.model("LeaveRequest", leaveSchema);
+
+// Email Sending Function
+const sendEmail = async (email, name, status, message) => {
+  try {
+    // This function would contain the nodemailer setup and email sending logic
+    // You would need to configure this with your email service provider
+    console.log(`Email notification would be sent to ${email} about ${status} leave request`);
+
+    // Uncomment and configure when you have email credentials
+    /*
+    const transporter = nodemailer.createTransport({
+      service: 'your-email-service',
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+    
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: `Leave Request ${status}`,
+      html: `<p>Hello ${name},</p>
+             <p>Your leave request has been <strong>${status}</strong>.</p>
+             <p>Request details: ${message}</p>`
+    });
+    */
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
+};
+
+
+// Role-Based Middleware
+const roleMiddleware = (allowedRoles) => {
+  return (req, res, next) => {
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ message: `Access denied. Required role: ${allowedRoles.join(' or ')}` });
+    }
+    next();
+  };
+};
+
+// Admin Middleware (shorthand for roleMiddleware(['admin']))
+const adminMiddleware = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Access denied. Admin role required.' });
+  }
+  next();
+};
+
+// AUTH ROUTES
+
+// Login Route
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find user
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Compare passwords
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: 'Invalid credentials' });
+    }
+
+    // Generate JWT
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
+
+    res.json({
+      token,
+      requirePasswordChange: user.requirePasswordChange,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Register Route (for development/testing)
+app.post('/api/auth/register', async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    // Check if email already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Email already registered' });
+    }
+
+    // Hash password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    // Create new user
+    const newUser = new User({
+      name,
+      email,
+      password: hashedPassword,
+      role: role || 'employee',
+      requirePasswordChange: true
+    });
+
+    await newUser.save();
+
+    res.status(201).json({
+      message: 'User registered successfully',
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role
+      }
+    });
+  } catch (error) {
+    console.error('Register error:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+app.post('/api/auth/change-password', authMiddleware, async (req, res) => {
+  try {
+    console.log('Change password request received:', req.body);
+    const { newPassword } = req.body;
+
+    if (!newPassword || newPassword.length < 6) {
+      console.log('Invalid new password:', newPassword);
+      return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+    }
+
+    // Hash new password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Update user
+    req.user.password = hashedPassword;
+    req.user.requirePasswordChange = false;
+
+    // Ensure the 'name' field is present
+    if (!req.user.name) {
+      req.user.name = 'Unknown'; // Set a default name if missing
+    }
+
+    console.log('Updating user:', req.user);
+    await req.user.save();
+
+    console.log('Password changed successfully for user:', req.user.email);
+    res.json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+
+// Claim Schema
+const claimSchema = new mongoose.Schema({
+  claimNumber: String,
+  date: String,
+  employeeName: String,
+  employeeID: String,
+  location: String,
+  expenses: Array,
+  advanceReceived: Number,
+  adjustments: Number,
+  cashReturned: Number,
+  paymentStatus: { type: String, default: 'Pending' } // Added payment status field with default 'Pending'
+
+});
+
+const Claim = mongoose.model("Claim", claimSchema);
+
+// Payment Schema
+const paymentSchema = new mongoose.Schema({
+  claimNumber: String,
+  employeeName: String,
+  paymentType: String,
+  utrNumber: String,
+  amount: Number,
+  status: { type: String, default: 'Pending' }, // Added status field with default 'pending'
+  paymentDate: { type: Date, default: Date.now } // Added payment date
+});
+
+const Payment = mongoose.model("Payment", paymentSchema);
+
+// // Save Claim
+// app.post("/api/claims", async (req, res) => {
+//   try {
+//     const newClaim = new Claim(req.body);
+//     await newClaim.save();
+//     res.status(201).json({ message: "Claim saved successfully!" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error saving claim", error });
+//   }
+// });
+
+// // Save Payment
+// app.post("/api/payments", async (req, res) => {
+//   const { claimFormNumber, paymentType, utrNumber, amount } = req.body;
+//   if (!claimFormNumber || !amount || (paymentType === "upi" && !utrNumber)) {
+//     return res.status(400).json({ message: "All fields are required!" });
+//   }
+//   try {
+//     const newPayment = new Payment(req.body);
+//     await newPayment.save();
+//     res.status(201).json({ message: "Payment saved successfully!" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error saving payment", error });
+//   }
+// });
+
+
+// Save Claim
+app.post("/api/claims", async (req, res) => {
+  try {
+    // Ensure new claims have Pending status by default
+    const claimData = {
+      ...req.body,
+      paymentStatus: 'Pending'
+    };
+    
+    const newClaim = new Claim(claimData);
+    await newClaim.save();
+    res.status(201).json({ message: "Claim saved successfully!" });
+  } catch (error) {
+    res.status(500).json({ message: "Error saving claim", error });
+  }
+});
+
+// Get all claims
+app.get("/api/claims", async (req, res) => {
+  try {
+    const claims = await Claim.find({});
+    res.status(200).json(claims);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching claims", error });
+  }
+});
+
+// Get claim by claim number
+app.get("/api/claims/:claimNumber", async (req, res) => {
+  try {
+    const claim = await Claim.findOne({ claimNumber: req.params.claimNumber });
+    
+    if (!claim) {
+      return res.status(404).json({ message: "Claim not found" });
+    }
+    
+    res.status(200).json(claim);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching claim", error });
+  }
+});
+
+// // Save Payment
+// app.post("/api/payments", async (req, res) => {
+//   const { claimNumber, paymentType, utrNumber, amount, status } = req.body;
+//   if (!claimNumber || !amount || (paymentType === "upi" && !utrNumber)) {
+//     return res.status(400).json({ message: "All fields are required!" });
+//   }
+//   try {
+//     const newPayment = new Payment(req.body);
+//     await newPayment.save();
+//     res.status(201).json({ message: "Payment saved successfully!" });
+//   } catch (error) {
+//     res.status(500).json({ message: "Error saving payment", error });
+//   }
+// });
+
+
+// Save Payment - Fixed to properly update claim payment status
+app.post("/api/payments", async (req, res) => {
+  const { claimNumber,employeeName, paymentType, utrNumber, amount } = req.body;
+  
+  if (!claimNumber || !amount || (paymentType === "upi" && !utrNumber)) {
+    return res.status(400).json({ message: "All fields are required!" });
+  }
+  
+  try {
+    // 1. Create the payment record
+    const newPayment = new Payment({
+      claimNumber,
+      employeeName,
+      paymentType, 
+      utrNumber,
+      amount,
+      status: 'Completed',
+      paymentDate: new Date()
+    });
+    
+    await newPayment.save();
+    
+    // 2. Update the claim's payment status - this is the critical step
+    const updatedClaim = await Claim.findOneAndUpdate(
+      { claimNumber: claimNumber },
+      { $set: { paymentStatus: 'Paid' } },
+      { new: true }
+    );
+    
+    if (!updatedClaim) {
+      return res.status(404).json({ message: "Claim not found" });
+    }
+    
+    res.status(201).json({ 
+      message: "Payment saved successfully and claim status updated!",
+      payment: newPayment,
+      claim: updatedClaim
+    });
+  } catch (error) {
+    console.error("Error processing payment:", error);
+    res.status(500).json({ message: "Error processing payment", error });
+  }
+});
+
+
+// Get all payments
+app.get("/api/payments", async (req, res) => {
+  try {
+    const payments = await Payment.find({});
+    res.status(200).json(payments);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching payments", error });
+  }
+});
+
+// Get payments with claim details
+app.get("/api/payments/with-claims", async (req, res) => {
+  try {
+    const payments = await Payment.find({});
+    
+    // Create an array of promises to fetch claim data for each payment
+    const paymentPromises = payments.map(async (payment) => {
+      const claim = await Claim.findOne({ claimNumber: payment.claimNumber });
+      
+      // Return a new object with payment data and associated claim data
+      return {
+        payment: payment.toObject(),
+        claim: claim ? claim.toObject() : null
+      };
+    });
+    
+    // Wait for all promises to resolve
+    const paymentDetails = await Promise.all(paymentPromises);
+    
+    res.status(200).json(paymentDetails);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching payment details", error });
+  }
+});
+
+app.get("/api/claims-with-status", async (req, res) => {
+  try {
+    // Get all claims
+    const claims = await Claim.find({});
+    
+    // Process claims to add total expense
+    const processedClaims = claims.map(claim => {
+      // Calculate total expense
+      const totalExpense = claim.expenses.reduce((sum, expense) => sum + (expense.amount || 0), 0);
+      
+      return {
+        ...claim.toObject(),
+        totalExpense,
+        // Use the stored paymentStatus field instead of calculating it
+        paymentStatus: claim.paymentStatus || 'Pending'
+      };
+    });
+    
+    res.status(200).json(processedClaims);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching claims with status", error });
+  }
+});
+
+
+// Get All Users Route (Only Admins Can Access)
+app.get('/api/users', authMiddleware, async (req, res) => {
+  try {
+    // Check if the user is an admin
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admins only." });
+    }
+
+    // Fetch all users from the database
+    const users = await User.find({}, { password: 0 }); // Exclude passwords for security
+
+    res.json(users);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// Update User Role Route (Only Admins Can Modify Roles)
+app.put('/api/users/:id/role', authMiddleware, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Toggle role between "admin" and "employee"
+    user.role = user.role === "employee" ? "admin" : "employee";
+
+    await user.save();
+    res.json({ message: `User role updated to ${user.role}`, role: user.role });
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// ✅ POST route to submit a leave request
+app.post("/leave", async (req, res) => {
+  try {
+    const newRequest = new LeaveRequest(req.body);
+    const savedRequest = await newRequest.save(); // Save and retrieve the complete document
+
+    // Emit a real-time notification with the full document (including _id)
+    io.emit("new_leave_request", savedRequest);
+
+    res.status(201).json({ message: "Leave request submitted successfully!", leave: savedRequest });
+  } catch (error) {
+    res.status(500).json({ message: "Error submitting leave request", error });
+  }
+});
+
+// ✅ GET route to fetch all leave requests
+app.get("/leave", async (req, res) => {
+  try {
+    const leaveRequests = await LeaveRequest.find().sort({ _id: -1 }); // Sort by newest first
+    res.status(200).json(leaveRequests);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching leave requests", error });
+  }
+});
+
+// ✅ Approve/Reject a leave request
+app.post("/approve-leave", async (req, res) => {
+  const { id, status } = req.body;
+
+  try {
+    const updatedLeave = await LeaveRequest.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedLeave) {
+      return res.status(404).json({ message: "Leave request not found" });
+    }
+
+    // Emit update notification
+    io.emit("leave_status_updated", { id, status });
+
+    res.json({ message: `Leave request ${status} successfully!`, leave: updatedLeave });
+  } catch (error) {
+    res.status(500).json({ message: "Error updating leave request", error });
+  }
+});
+
+app.get("/employee-leave-requests", async (req, res) => {
+  const { email } = req.query;
+  if (!email) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  try {
+    const employeeRequests = await LeaveRequest.find({ email })
+      .sort({ timestamp: -1 }) // Sort by timestamp instead of _id
+      .exec();
+    res.json(employeeRequests);
+  } catch (error) {
+    console.error("Error fetching employee leave requests:", error);
+    res.status(500).json({
+      message: "Error fetching employee leave requests",
+      error
+    });
+  }
+});
+
+
+// ✅ GET route to fetch all leave requests
+app.get("/leave-requests", async (req, res) => {
+  try {
+    const requests = await LeaveRequest.find().sort({ _id: -1 }); // Sort by newest first
+    res.json(requests);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching leave requests", error });
+  }
+});
+
+// LEAVE REQUEST ROUTES
+
+// Submit Leave Request
+app.post("/api/leave", authMiddleware, async (req, res) => {
+  try {
+    const { subject, message } = req.body;
+
+    const newRequest = new LeaveRequest({
+      name: req.user.name,
+      email: req.user.email,
+      subject,
+      message,
+      status: "Pending"
+    });
+
+    const savedRequest = await newRequest.save();
+
+    // Emit socket event for real-time notification
+    io.emit("new_leave_request", {
+      id: savedRequest._id,
+      name: savedRequest.name,
+      email: savedRequest.email,
+      subject: savedRequest.subject,
+      message: savedRequest.message,
+      status: savedRequest.status,
+      timestamp: savedRequest.timestamp
+    });
+
+    res.status(201).json({
+      message: "Leave request submitted successfully!",
+      leave: savedRequest
+    });
+  } catch (error) {
+    console.error("Error submitting leave request:", error);
+    res.status(500).json({ message: "Error submitting leave request", error: error.message });
+  }
+});
+
+// Get All Leave Requests (Admin & Manager access)
+app.get("/api/leave/all", authMiddleware, roleMiddleware(['admin', 'manager']), async (req, res) => {
+  try {
+    const leaveRequests = await LeaveRequest.find().sort({ timestamp: -1 });
+    res.status(200).json(leaveRequests);
+  } catch (error) {
+    console.error("Error fetching leave requests:", error);
+    res.status(500).json({ message: "Error fetching leave requests", error: error.message });
+  }
+});
+
+// Get Employee's Own Leave Requests
+app.get("/api/leave/employee", authMiddleware, async (req, res) => {
+  try {
+    const employeeRequests = await LeaveRequest.find({ email: req.user.email })
+      .sort({ timestamp: -1 })
+      .exec();
+    res.json(employeeRequests);
+  } catch (error) {
+    console.error("Error fetching employee leave requests:", error);
+    res.status(500).json({
+      message: "Error fetching employee leave requests",
+      error: error.message
+    });
+  }
+});
+
+// Approve/Reject Leave Request (Admin & Manager access)
+app.post("/api/leave/update-status", authMiddleware, roleMiddleware(['admin', 'manager']), async (req, res) => {
+  const { id, status } = req.body;
+
+  if (!['Approved', 'Rejected'].includes(status)) {
+    return res.status(400).json({ message: "Status must be either 'Approved' or 'Rejected'" });
+  }
+
+  try {
+    const updatedLeave = await LeaveRequest.findByIdAndUpdate(
+      id,
+      {
+        status,
+        timestamp: new Date() // Update timestamp when status changes
+      },
+      { new: true }
+    );
+
+    if (!updatedLeave) {
+      return res.status(404).json({ message: "Leave request not found" });
+    }
+
+    // Emit an event to update all admin/manager clients
+    io.emit("leave_status_updated", {
+      id: updatedLeave._id,
+      email: updatedLeave.email,
+      status: updatedLeave.status,
+      message: updatedLeave.message,
+      timestamp: updatedLeave.timestamp,
+      name: updatedLeave.name,
+      subject: updatedLeave.subject
+    });
+
+    // Send email notification to employee
+    await sendEmail(updatedLeave.email, updatedLeave.name, status, updatedLeave.message);
+
+    res.json({
+      message: `Leave request ${status.toLowerCase()} successfully!`,
+      leave: updatedLeave
+    });
+  } catch (error) {
+    console.error("Error updating leave request:", error);
+    res.status(500).json({ message: "Error updating leave request", error: error.message });
+  }
+});
+
+
+// Task Model
+const taskSchema = new mongoose.Schema({
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  projectTitle: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  deadline: {
+    type: Date,
+    required: true
+  },
+  completedPercentage: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 100
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const Task = mongoose.model('Task', taskSchema);
+
+// Create a new task
+app.post('/api/tasks', authMiddleware, async (req, res) => {
+  try {
+    const { projectTitle, description, deadline, completedPercentage } = req.body;
+
+    // Create new task in database
+    const newTask = new Task({
+      userId: req.user._id,
+      projectTitle,
+      description,
+      deadline: new Date(deadline),
+      completedPercentage: completedPercentage || 0
+    });
+
+    // Save to MongoDB
+    const savedTask = await newTask.save();
+
+    // Save to file system
+    await saveTaskToFile(savedTask);
+
+    res.status(201).json({
+      message: 'Task created successfully',
+      task: {
+        id: savedTask._id,
+        projectTitle: savedTask.projectTitle,
+        description: savedTask.description,
+        deadline: savedTask.deadline,
+        completedPercentage: savedTask.completedPercentage,
+        remainingPercentage: 100 - savedTask.completedPercentage,
+        createdAt: savedTask.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Create task error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get all tasks for current user
+app.get('/api/tasks', authMiddleware, async (req, res) => {
+  try {
+    // Get tasks from MongoDB
+    const tasks = await Task.find({ userId: req.user._id }).sort({ deadline: 1 });
+
+    // Map tasks to required format
+    const formattedTasks = tasks.map(task => ({
+      id: task._id,
+      projectTitle: task.projectTitle,
+      description: task.description,
+      deadline: task.deadline,
+      completedPercentage: task.completedPercentage,
+      remainingPercentage: 100 - task.completedPercentage,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt
+    }));
+
+    res.json(formattedTasks);
+  } catch (error) {
+    console.error('Get tasks error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Get task by ID
+app.get('/api/tasks/:id', authMiddleware, async (req, res) => {
+  try {
+    const task = await Task.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    });
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.json({
+      id: task._id,
+      projectTitle: task.projectTitle,
+      description: task.description,
+      deadline: task.deadline,
+      completedPercentage: task.completedPercentage,
+      remainingPercentage: 100 - task.completedPercentage,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt
+    });
+  } catch (error) {
+    console.error('Get task error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Update task
+app.put('/api/tasks/:id', authMiddleware, async (req, res) => {
+  try {
+    const { projectTitle, description, deadline, completedPercentage } = req.body;
+
+    // Find and update task
+    const task = await Task.findOneAndUpdate(
+      {
+        _id: req.params.id,
+        userId: req.user._id
+      },
+      {
+        projectTitle,
+        description,
+        deadline: new Date(deadline),
+        completedPercentage,
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Update file system
+    await saveTaskToFile(task);
+
+    res.json({
+      id: task._id,
+      projectTitle: task.projectTitle,
+      description: task.description,
+      deadline: task.deadline,
+      completedPercentage: task.completedPercentage,
+      remainingPercentage: 100 - task.completedPercentage,
+      updatedAt: task.updatedAt
+    });
+  } catch (error) {
+    console.error('Update task error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Delete task
+app.delete('/api/tasks/:id', authMiddleware, async (req, res) => {
+  try {
+    const task = await Task.findOne({
+      _id: req.params.id,
+      userId: req.user._id
+    });
+
+    if (!task) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    // Delete from database
+    await Task.deleteOne({ _id: req.params.id });
+
+    // Delete from file system
+    await deleteTaskFile(req.user._id, req.params.id);
+
+    res.json({ message: 'Task deleted successfully' });
+  } catch (error) {
+    console.error('Delete task error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Set up tasks directory
+const tasksDir = path.join(__dirname, 'tasks');
+if (!fs.existsSync(tasksDir)){
+    fs.mkdirSync(tasksDir, { recursive: true });
+}
+
+// Function to save task to filesystem
+const saveTaskToFile = async (task) => {
+  try {
+    // Find user by userId to get their name
+    const user = await User.findById(task.userId);
+    if (!user) {
+      throw new Error(`User not found with ID: ${task.userId}`);
+    }
+    
+    // Use user's name for the directory
+    const userName = user.name || user.email.split('@')[0]; // Fallback to email username if name is empty
+    const sanitizedUserName = userName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    
+    // Create user directory using user's name
+    const userDir = path.join(tasksDir, sanitizedUserName);
+    if (!fs.existsSync(userDir)){
+      fs.mkdirSync(userDir, { recursive: true });
+    }
+    
+    // Create filename based on task ID
+    const filename = path.join(userDir, `task_${task._id.toString()}.json`);
+    
+    // Save task data to file
+    const taskData = {
+      id: task._id.toString(),
+      userId: task.userId.toString(),
+      userName: userName,
+      projectTitle: task.projectTitle,
+      description: task.description,
+      deadline: task.deadline,
+      completedPercentage: task.completedPercentage,
+      remainingPercentage: 100 - task.completedPercentage,
+      createdAt: task.createdAt,
+      updatedAt: task.updatedAt
+    };
+    
+    await fs.promises.writeFile(filename, JSON.stringify(taskData, null, 2));
+    console.log(`Successfully saved task for user ${userName} at ${filename}`);
+    return true;
+  } catch (error) {
+    console.error('Error saving task to file:', error);
+    return false;
+  }
+};
+
+// Function to delete task file
+const deleteTaskFile = async (userId, taskId) => {
+  try {
+    // Find user by userId to get their name
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error(`User not found with ID: ${userId}`);
+    }
+    
+    // Use user's name for the directory
+    const userName = user.name || user.email.split('@')[0];
+    const sanitizedUserName = userName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    
+    const filename = path.join(tasksDir, sanitizedUserName, `task_${taskId.toString()}.json`);
+    if (fs.existsSync(filename)) {
+      await fs.promises.unlink(filename);
+      console.log(`Successfully deleted task file for ${userName}: ${filename}`);
+      return true;
+    } else {
+      console.warn(`Task file not found: ${filename}`);
+      return false;
+    }
+  } catch (error) {
+    console.error('Error deleting task file:', error);
+    return false;
+  }
+};
+
+// Function to get all tasks for a user from filesystem
+const getUserTasksFromFiles = async (userId) => {
+  try {
+    // Find user by userId to get their name
+    const user = await User.findById(userId);
+    if (!user) {
+      throw new Error(`User not found with ID: ${userId}`);
+    }
+    
+    // Use user's name for the directory
+    const userName = user.name || user.email.split('@')[0];
+    const sanitizedUserName = userName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    
+    const userDir = path.join(tasksDir, sanitizedUserName);
+    
+    // If user directory doesn't exist, return empty array
+    if (!fs.existsSync(userDir)) {
+      console.log(`No directory found for user: ${userName}`);
+      return [];
+    }
+    
+    // Read all task files in the user directory
+    const files = await fs.promises.readdir(userDir);
+    const taskFiles = files.filter(file => file.startsWith('task_') && file.endsWith('.json'));
+    
+    // Read and parse each task file
+    const tasks = await Promise.all(taskFiles.map(async (file) => {
+      try {
+        const content = await fs.promises.readFile(path.join(userDir, file), 'utf8');
+        return JSON.parse(content);
+      } catch (err) {
+        console.error(`Error reading task file ${file}:`, err);
+        return null;
+      }
+    }));
+    
+    // Filter out any null values from failed reads
+    return tasks.filter(task => task !== null);
+  } catch (error) {
+    console.error('Error reading tasks from files:', error);
+    return [];
+  }
+};
+
+app.get('/api/users/:id', authMiddleware, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    console.error("Error fetching user details:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// Socket.io connection handling
+io.on("connection", (socket) => {
+  console.log("A user connected");
+
+  // Join a room based on user email for targeted notifications
+  socket.on("join_room", (email) => {
+    socket.join(email);
+    console.log(`Socket joined room: ${email}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("A user disconnected");
+  });
+
+  // Handle errors
+  socket.on("error", (error) => {
+    console.error("Socket error:", error);
+  });
+});
+
+// Start Server
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});

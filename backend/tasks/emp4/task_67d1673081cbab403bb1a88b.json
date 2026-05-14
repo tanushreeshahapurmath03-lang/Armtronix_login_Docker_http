@@ -1,0 +1,30 @@
+{
+  "id": "67d1673081cbab403bb1a88b",
+  "userId": "67ebcab4974ac4e19523acf6",
+  "userName": "emp4",
+  "projectTitle": "Machine monitoring system",
+  "description": "Machine monitoring system",
+  "deadline": "2025-03-30T00:00:00.000Z",
+  "status": "in-progress",
+  "rationale": "waiting for customer requirement updates.",
+  "completedPercentage": 50,
+  "assignedTo": [
+    {
+      "id": "67bfef2924f8484b73634391",
+      "name": "emp2",
+      "email": "emp2@gmail.com"
+    },
+    {
+      "id": "67ebcab4974ac4e19523acf6",
+      "name": "emp4",
+      "email": "emp4@gmail.com"
+    }
+  ],
+  "createdBy": {
+    "id": "67bda687127366380ea9eff7",
+    "name": "Admin",
+    "email": "admin1@gmail.com"
+  },
+  "createdAt": "2025-03-12T10:51:28.401Z",
+  "updatedAt": "2025-04-01T11:17:06.992Z"
+}

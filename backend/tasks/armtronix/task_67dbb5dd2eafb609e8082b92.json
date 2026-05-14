@@ -1,0 +1,30 @@
+{
+  "id": "67dbb5dd2eafb609e8082b92",
+  "userId": "67d133f71b54266851357af8",
+  "userName": "Armtronix",
+  "projectTitle": "Armtronix Website",
+  "description": "Design full stack user website using MERN stack",
+  "deadline": "2025-03-31T00:00:00.000Z",
+  "status": "approved",
+  "rationale": "Waiting for requirements from clients.",
+  "completedPercentage": 100,
+  "assignedTo": [
+    {
+      "id": "67bda4242b50a15b98eb337c",
+      "name": "emp1",
+      "email": "emp1@gmail.com"
+    },
+    {
+      "id": "67d133f71b54266851357af8",
+      "name": "Armtronix",
+      "email": "armtronixiot@gmail.com"
+    }
+  ],
+  "createdBy": {
+    "id": "67dba75e2eafb609e8082b2f",
+    "name": "Admin2",
+    "email": "admin2@gmail.com"
+  },
+  "createdAt": "2025-03-20T06:29:49.344Z",
+  "updatedAt": "2025-03-29T07:30:55.679Z"
+}

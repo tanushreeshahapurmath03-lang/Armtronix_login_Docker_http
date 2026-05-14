@@ -1,0 +1,99 @@
+version: '3.8'
+services:
+  backend:
+    restart: always
+    build: ./backend
+    ports:
+      - "5002:5002"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./login_frontend/ssl:/app/ssl  # ✅ Mount SSL certs inside container
+    depends_on:
+      - mongo
+    networks:
+      - mern_network
+    ## to avoid logs takings huge amount of storage.
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+
+  frontend:
+    restart: always
+    build: ./login_frontend
+    ports:
+      - "5176:5176"  # Nginx serves on port 80 inside the container
+    depends_on:
+      - backend
+    networks:
+      - mern_network
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - mern_network
+
+volumes:
+  mongo_data:
+
+networks:
+  mern_network:
+    driver: bridge
+
+
+
+
+# version: '3.8'
+
+# services:
+#   backend:
+#     build: ./backend
+#     ports:
+#       - "5002:5002"
+#     env_file:
+#       - ./backend/.env
+#     volumes:
+#       - ./login_frontend/ssl:/app/ssl
+#     depends_on:
+#       - mongo
+#     networks:
+#       - mern_network
+
+#   frontend:
+#     build: ./login_frontend
+#     ports:
+#       - "443:443"  # HTTPS exposed on 5176
+#     env_file:
+#       - ./login_frontend/.env
+#     volumes:
+#       - ./login_frontend/ssl:/etc/nginx/ssl  # Mount SSL certs
+#     depends_on:
+#       - backend
+#     networks:
+#       - mern_network
+
+
+#   mongo:
+#     image: mongo
+#     restart: always
+#     ports:
+#       - "27018:27017"
+#     volumes:
+#       - mongo_data:/data/db
+#     networks:
+#       - mern_network
+
+# volumes:
+#   mongo_data:
+
+# networks:
+#   mern_network:
+#     driver: bridge

@@ -1,0 +1,25 @@
+{
+  "id": "67cfd015b44e6cb239d0de9c",
+  "userId": "67bda4242b50a15b98eb337c",
+  "userName": "emp1",
+  "projectTitle": "Temperature Humidity Monitoring system",
+  "description": "Temperature Humidity Monitoring system",
+  "deadline": "2025-03-19T00:00:00.000Z",
+  "status": "in-progress",
+  "rationale": "in progress",
+  "completedPercentage": 50,
+  "assignedTo": [
+    {
+      "id": "67bda4242b50a15b98eb337c",
+      "name": "emp1",
+      "email": "emp1@gmail.com"
+    }
+  ],
+  "createdBy": {
+    "id": "67bda687127366380ea9eff7",
+    "name": "Admin",
+    "email": "admin1@gmail.com"
+  },
+  "createdAt": "2025-03-11T05:54:29.883Z",
+  "updatedAt": "2025-03-29T07:31:02.037Z"
+}
