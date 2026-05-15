@@ -345,13 +345,26 @@ async function handleApi(path, request) {
     return jsonResponse(claims);
   }
 
+  if (path === '/api/claim-details' && request.method === 'GET') {
+    const url = new URL(request.url, window.location.origin);
+    const claimNumber = url.searchParams.get('claimNumber')?.trim();
+    if (!claimNumber) {
+      return jsonResponse({ message: 'Claim number is required' }, { status: 400 });
+    }
+
+    const all = await db.getAll(STORE.claims);
+    const claim = all.find(c => c.claimNumber === claimNumber);
+    if (!claim) return jsonResponse({ message: 'Claim not found' }, { status: 404 });
+    return jsonResponse(claim);
+  }
+
   if (path === '/api/claims' && request.method === 'POST') {
     const body = await readBody(request);
 
     // UI sends multipart FormData with fields + expenses as JSON string.
     const claimNumber = body.claimNumber || `CF/${new Date().getFullYear().toString().slice(-2)}-25/`;
 
-    const id = crypto.randomUUID();
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
     const expenses = typeof body.expenses === 'string' ? JSON.parse(body.expenses) : (body.expenses || []);
 
     const claim = {
@@ -412,7 +425,7 @@ async function handleApi(path, request) {
       return jsonResponse({ message: 'All fields are required!' }, { status: 400 });
     }
 
-    const paymentId = crypto.randomUUID();
+    const paymentId = (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : Math.random().toString(36).substring(2, 15);
     const payment = {
       id: paymentId,
       claimNumber,

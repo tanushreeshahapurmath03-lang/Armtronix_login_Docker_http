@@ -43,8 +43,8 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       hmr: {
         overlay: false,
-        protocol: "ws", // WebSocket for HMR
-        host: backendURL.hostname, // ✅ e.g., "192.168.1.220"
+        protocol: 'ws', // WebSocket for HMR
+        host: backendURL.hostname,
         clientPort: 5176
       }
     },

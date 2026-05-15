@@ -151,6 +151,7 @@ const fs = require('fs');
 const http = require('http');
 const { Server } = require('socket.io');
 const os = require('os');
+const bcrypt = require('bcryptjs');
 
 // Routes
 const authRoutes = require('./routes/authRoutes');
@@ -160,6 +161,7 @@ const taskRoutes = require('./routes/taskRoutes');
 const claimRoutes = require('./routes/claimRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const eventRoutes = require('./routes/eventRoutes');
+const User = require('./models/User');
 
 // Function to get local IP dynamically
 function getLocalIP() {
@@ -198,11 +200,23 @@ const PORT = process.env.PORT || process.env.VITE_BACKEND_PORT || 5002;
 const app = express();
 const server = http.createServer(app);
 
+const ALLOWED_ORIGINS = [
+  FRONTEND_URL,
+  'http://localhost:5176',
+  'http://127.0.0.1:5176',
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+];
+
 // WebSocket Server with CORS
 const io = new Server(server, {
   cors: {
-    origin: FRONTEND_URL,
-        // origin: 'https://team.armtronix.net',
+    origin: (origin, callback) => {
+      if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+        return callback(null, true);
+      }
+      callback(new Error('Not allowed by CORS'));
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true
   }
@@ -210,7 +224,12 @@ const io = new Server(server, {
 
 // Middleware
 app.use(cors({
-   origin: FRONTEND_URL,
+  origin: (origin, callback) => {
+    if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+      return callback(null, true);
+    }
+    callback(new Error('Not allowed by CORS'));
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
@@ -225,13 +244,47 @@ app.use((req, res, next) => {
 });
 
 // MongoDB Connection
-const mongoURI = process.env.VITE_MONGO_URI || `mongodb://${LOCAL_IP}:27017/employee-auth`;
+const mongoURI = process.env.MONGODB_URI || process.env.VITE_MONGO_URI || `mongodb://${LOCAL_IP}:27017/employee-auth`;
+console.log(`📚 MongoDB URI: ${mongoURI}`);
 
 mongoose.connect(mongoURI, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 })
-  .then(() => console.log('✅ Connected to MongoDB successfully!'))
+  .then(async () => {
+    console.log('✅ Connected to MongoDB successfully!');
+
+    try {
+      const existingAdmin = await User.findOne({ email: 'admin@gmail.com' });
+      if (!existingAdmin) {
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash('123456', salt);
+        const adminUser = new User({
+          name: 'Admin',
+          empId: 'admin',
+          email: 'admin@gmail.com',
+          password: hashedPassword,
+          role: 'admin',
+          requirePasswordChange: false
+        });
+        await adminUser.save();
+        console.log('✅ Default admin user created: admin@gmail.com');
+      } else {
+        const passwordMatches = await bcrypt.compare('123456', existingAdmin.password);
+        if (!passwordMatches) {
+          const salt = await bcrypt.genSalt(10);
+          existingAdmin.password = await bcrypt.hash('123456', salt);
+          existingAdmin.requirePasswordChange = false;
+          await existingAdmin.save();
+          console.log('✅ Admin password reset to admin@gmail.com / 123456');
+        } else {
+          console.log('ℹ️ Default admin user already exists and password is up to date.');
+        }
+      }
+    } catch (seedError) {
+      console.error('❌ Error seeding default admin user:', seedError);
+    }
+  })
   .catch(err => {
     console.error('❌ MongoDB connection error:', err);
     process.exit(1);

@@ -21,7 +21,7 @@ function shouldEmulate(config) {
   const backendBase = import.meta.env.VITE_BACKEND_URL;
   const isApiPath = url.pathname.includes('/api/') || url.pathname.startsWith('/api');
   const isBackendHost = !!backendBase && url.href.startsWith(backendBase);
-  return isApiPath || isBackendHost;
+  return isApiPath && !isBackendHost;
 }
 
 async function parseResponseData(response, responseType) {

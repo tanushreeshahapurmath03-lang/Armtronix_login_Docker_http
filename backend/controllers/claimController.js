@@ -528,6 +528,24 @@ exports.getClaimByNumber = async (req, res) => {
   }
 };
 
+exports.getClaimByNumberQuery = async (req, res) => {
+  try {
+    const claimNumber = req.query.claimNumber;
+    if (!claimNumber) {
+      return res.status(400).json({ message: "Claim number is required" });
+    }
+
+    const claim = await Claim.findOne({ claimNumber });
+    if (!claim) {
+      return res.status(404).json({ message: "Claim not found" });
+    }
+
+    res.status(200).json(claim);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching claim", error });
+  }
+};
+
 exports.getClaimsWithStatus = async (req, res) => {
   try {
     const claims = await Claim.find({});

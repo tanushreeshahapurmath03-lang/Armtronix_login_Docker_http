@@ -108,6 +108,7 @@ import Git from './Git.jsx';
 import Cloudflare from './Cloudflare.jsx';
 import Aigpt from './Aigpt.jsx';
 import ClaimForm from './ClaimForm.jsx';
+import ClaimDetail from './ClaimDetail.jsx';
 import LeaveForm from './LeaveForm.jsx';
 import Help from './Help.jsx';
 import Attendance from './Attendance.jsx';
@@ -187,27 +188,32 @@ registerServiceWorker();
       const backendBase = import.meta.env.VITE_BACKEND_URL;
       const u = new URL(url, window.location.origin);
 
-      // Match backend host traffic and any /api/... path. Keep behavior for assets.
+      // Only emulate same-origin /api routes; allow actual backend host calls to go over network.
       const isApiPath = u.pathname.includes('/api/') || u.pathname.startsWith('/api');
       const isBackendHost = !!backendBase && u.href.startsWith(backendBase);
+      const shouldEmulate = isApiPath && !isBackendHost;
 
-      if (isApiPath || isBackendHost) {
-        const headers = new Headers(init?.headers || input?.headers || {});
-        if (init?.headers?.Authorization) headers.set('Authorization', init.headers.Authorization);
+      if (shouldEmulate) {
+        // Prevent stripping of multipart/form-data boundaries by avoiding direct new Headers() override if not necessary
+        let finalHeaders = init?.headers || input?.headers;
+        if (init?.headers?.Authorization) {
+           finalHeaders = new Headers(finalHeaders || {});
+           finalHeaders.set('Authorization', init.headers.Authorization);
+        }
+        
+        const reqOpts = { method: init?.method || 'GET', body: init?.body };
+        if (finalHeaders) reqOpts.headers = finalHeaders;
+
         const req = input instanceof Request
           ? new Request(input, init)
-          : new Request(u.toString(), { method: init?.method || 'GET', headers, body: init?.body });
+          : new Request(u.toString(), reqOpts);
+
         const resp = await handleRequest(req);
         if (resp) return resp;
-        if (isBackendHost) {
-          return new Response(JSON.stringify({ message: 'No local handler for this backend request' }), {
-            status: 501,
-            headers: { 'Content-Type': 'application/json' }
-          });
-        }
       }
-    } catch {
-      // fall through to network
+    } catch (err) {
+      console.error("Emulator Exception:", err);
+      // fallback to network
     }
 
     return originalFetch(input, init);
@@ -226,6 +232,7 @@ createRoot(document.getElementById('root')).render(
       <Route path="/cloudflare" element={<Cloudflare />} />
       <Route path="/aigpt" element={<Aigpt />} />
       <Route path="/claimform" element={<ClaimForm />} />
+      <Route path="/claim-detail" element={<ClaimDetail />} />
       <Route path="/leaveform" element={<LeaveForm />} />
       <Route path="/help" element={<Help />} />
       <Route path="/attendance" element={<Attendance />} />

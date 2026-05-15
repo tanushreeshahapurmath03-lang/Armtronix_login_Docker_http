@@ -6,6 +6,7 @@ import "./HeaderSidebar_admin.css";
 import axios from "axios";
 import { io } from "socket.io-client";
 import PWAWrapper from "./PWAWrapper"; // Import PWAWrapper
+import { adminNavigationItems } from "./navigationConfig"; // Import navigation config
 
 
 
@@ -153,18 +154,13 @@ const HeaderSidebar = () => {
 
       <div className={`sidebar ${isSidebarOpen ? "show" : ""}`}>
         <ul>
-          <li><Link to="/git1"><i className="fab fa-git-alt"></i> Git</Link></li>
-          <li><Link to="/cloudflare1"><i className="fas fa-cloud"></i> Cloudflare</Link></li>
-          <li><Link to="/aigpt1"><i className="fas fa-robot"></i>AI/GPT</Link></li>
-          <li><Link to="/annotation1"><i className="fas fa-tags"></i>Annotation</Link></li>
-          <li><Link to="/claimform1"><i className="fas fa-file-invoice-dollar"></i>Claim Form</Link></li>
-          <li><Link to="/leaveform1"><i className="fas fa-calendar"></i> Leave Form</Link></li>
-          <li><Link to="/register"><i className="fas fa-user-plus"></i> RegisterEmp</Link></li>
-          <li><Link to="/admindashboard"><i className="fas fa-users"></i> Emp Details</Link></li>
-          <li><Link to="/leavesettings"><i className="fas fa-sliders-h"></i>Set Leave</Link></li>
-          <li><Link to="/help1"><i className="fas fa-question-circle"></i> Help/Guide</Link></li>
-          <li><Link to="/coe"><i className="fas fa-calendar-alt"></i> COE</Link></li>
-
+          {adminNavigationItems.map((item, index) => (
+            <li key={index}>
+              <Link to={item.path}>
+                <i className={item.icon}></i> {item.label}
+              </Link>
+            </li>
+          ))}
         </ul>
       </div>
     </>

@@ -10,10 +10,10 @@ import axios from "axios";
 import { PDFDocument } from "pdf-lib"; // You'll need to install this in frontend too: npm install pdf-lib
 import { Eye, Trash2, Download, FileText } from "lucide-react";
 
-const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:5002';
 
 const ClaimForm = () => {
-  const [view, setView] = useState(null);
+  const [view, setView] = useState('claimForm');
   const mainContentRef = useRef(null);
   const [submittedClaims, setSubmittedClaims] = useState([]);
   const [selectedClaim, setSelectedClaim] = useState(null);
@@ -243,20 +243,33 @@ const ClaimForm = () => {
   useEffect(() => {
     const fetchNewClaimNumber = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/new-claim-number`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch claim number");
+        const backendResponse = await fetch(`${BACKEND_URL}/api/new-claim-number`);
+        if (backendResponse.ok) {
+          const data = await backendResponse.json();
+          console.log("Fetched Claim Number:", data.claimNumber);
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            claimNumber: data.claimNumber,
+          }));
+          return;
         }
-        const data = await response.json();
+      } catch (backendError) {
+        console.warn("Backend new-claim-number failed, falling back to local emulator:", backendError);
+      }
 
-        console.log("Fetched Claim Number:", data.claimNumber);
-
+      try {
+        const localResponse = await fetch(`/api/new-claim-number`);
+        if (!localResponse.ok) {
+          throw new Error("Failed to fetch new claim number from local emulator");
+        }
+        const localData = await localResponse.json();
+        console.log("Fetched local Claim Number:", localData.claimNumber);
         setFormData((prevFormData) => ({
           ...prevFormData,
-          claimNumber: data.claimNumber,
+          claimNumber: localData.claimNumber,
         }));
-      } catch (error) {
-        console.error("Error fetching new claim number:", error);
+      } catch (localError) {
+        console.error("Error fetching new claim number:", localError);
       }
     };
 

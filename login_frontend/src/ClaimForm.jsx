@@ -11,7 +11,7 @@ import './Git.css';
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 
-const ClaimForm = () => {
+const ClaimForm = ({ initialData = null, isReadOnly = false, customSidebar = null, headerComponent = null }) => {
   const [submittedClaims, setSubmittedClaims] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const toggleDropdown = () => setIsOpen(!isOpen);
@@ -38,9 +38,10 @@ const ClaimForm = () => {
   const mainContentRef = useRef(null);
 
   useEffect(() => {
+    if (isReadOnly) return;
     const fetchNewClaimNumber = async () => {
       try {
-        const response = await fetch(`${BACKEND_URL}/api/new-claim-number`); // Fix duplicate port issue
+        const response = await fetch(`/api/new-claim-number`);
         if (!response.ok) {
           throw new Error("Failed to fetch claim number");
         }
@@ -52,9 +53,10 @@ const ClaimForm = () => {
     };
 
     fetchNewClaimNumber();
-  }, []);
+  }, [isReadOnly]);
 
   useEffect(() => {
+    if (isReadOnly) return;
     const storedEmail = localStorage.getItem("userEmail");
     const loggedInEmail = sessionStorage.getItem("loggedInUserEmail");
 
@@ -74,7 +76,7 @@ const ClaimForm = () => {
           return;
         }
 
-        const response = await axios.get(`${BACKEND_URL}/api/user/profile`, {
+        const response = await axios.get(`/api/user/profile`, {
           headers: {
             Authorization: `Bearer ${token}`
           },
@@ -93,9 +95,36 @@ const ClaimForm = () => {
       }
     };
 
-
     fetchUserProfile();
-  }, []);
+  }, [isReadOnly]);
+
+  useEffect(() => {
+    if (isReadOnly && initialData) {
+      setFormData({
+        claimNumber: initialData.claimNumber || "",
+        date: initialData.date ? new Date(initialData.date).toISOString().split("T")[0] : "",
+        employeeName: initialData.employeeName || "",
+        employeeID: initialData.employeeID || "",
+        location: initialData.location || "",
+        approverName: initialData.approverName || "",
+        expenses: Array.isArray(initialData.expenses) && initialData.expenses.length > 0
+          ? initialData.expenses 
+          : Array(10).fill().map(() => ({ purpose: "", quantity: "", unitPrice: "", amount: "" })),
+        advanceReceived: initialData.advanceReceived || 0,
+        adjustments: initialData.adjustments || 0,
+        cashReturned: initialData.cashReturned || 0,
+      });
+
+      if (initialData.bills && Array.isArray(initialData.bills)) {
+        setBills(initialData.bills.map((b, i) => ({
+          name: b.originalName || `Bill_${i + 1}`,
+          isBackend: true,
+          billIndex: i,
+          type: b.contentType || 'application/pdf'
+        })));
+      }
+    }
+  }, [initialData, isReadOnly]);
 
 
   const handleChange = (e, index = null, field = null) => {
@@ -324,7 +353,26 @@ const ClaimForm = () => {
         const finalDoc = await PDFDocument.load(basePdfBytes);
 
         for (let bill of bills) {
-          const arrayBuffer = await bill.arrayBuffer();
+          let arrayBuffer;
+          let currentBlobObj = bill;
+          
+          if (bill.isBackend) {
+            try {
+              const res = await fetch(`/api/claims/${encodeURIComponent(formData.claimNumber)}/bill/${bill.billIndex}`);
+              if (res.ok) {
+                arrayBuffer = await res.arrayBuffer();
+                currentBlobObj = new Blob([arrayBuffer], { type: bill.type });
+              } else {
+                continue;
+              }
+            } catch (e) {
+              console.error("Backend bill fetch error", e);
+              continue;
+            }
+          } else {
+            arrayBuffer = await bill.arrayBuffer();
+          }
+
           if (bill.type === "application/pdf") {
             const billPdf = await PDFDocument.load(arrayBuffer);
             const copiedPages = await finalDoc.copyPages(billPdf, billPdf.getPageIndices());
@@ -362,7 +410,7 @@ const ClaimForm = () => {
                 resolve(blob);
               };
             };
-            reader.readAsDataURL(bill);
+            reader.readAsDataURL(currentBlobObj);
           }
         }
 
@@ -506,6 +554,7 @@ const ClaimForm = () => {
       }
 
       submitData.append("date", formData.date);
+      submitData.append("claimNumber", formData.claimNumber);
       submitData.append("employeeName", formData.employeeName);
       submitData.append("employeeID", formData.employeeID);
       if (formData.location) submitData.append("location", formData.location);
@@ -514,7 +563,7 @@ const ClaimForm = () => {
       submitData.append("cashReturned", formData.cashReturned);
       submitData.append("expenses", JSON.stringify(formData.expenses));
 
-      const response = await fetch(`${BACKEND_URL}/api/claims`, {
+      const response = await fetch(`/api/claims`, {
         method: "POST",
         body: submitData,
       });
@@ -564,6 +613,10 @@ const ClaimForm = () => {
   };
 
   const handleViewBill = (file) => {
+    if (file.isBackend) {
+      window.open(`/api/claims/${encodeURIComponent(formData.claimNumber)}/bill/${file.billIndex}`, '_blank');
+      return;
+    }
     const fileURL = URL.createObjectURL(file);
     window.open(fileURL, '_blank');
   };
@@ -594,7 +647,7 @@ const ClaimForm = () => {
 
   return (
     <div className="dashboard-container">
-      <HeaderSidebar />
+      {customSidebar ? customSidebar : <HeaderSidebar />}
 
       <style>
         {`
@@ -649,6 +702,7 @@ const ClaimForm = () => {
         className={`main-content ${isPdfMode ? "pdf-mode" : ""}`}
         ref={mainContentRef}
       >
+        {headerComponent && headerComponent}
         <h1 className="form-title">Expense Claim Form </h1>
 
         <div className="form-header">
@@ -685,15 +739,15 @@ const ClaimForm = () => {
         <div className="employee-details">
           <div>
             <label>Employee Name <span className='req'>*</span></label>
-            <input type="text" name="employeeName" placeholder="Name" value={formData.employeeName} onChange={handleChange} required />
+            <input type="text" name="employeeName" placeholder="Name" value={formData.employeeName} onChange={handleChange} required readOnly={isReadOnly} />
           </div>
           <div>
             <label>Employee ID </label>
-            <input type="text" name="employeeID" placeholder="ID" value={formData.employeeID} onChange={handleChange} />
+            <input type="text" name="employeeID" placeholder="ID" value={formData.employeeID} onChange={handleChange} readOnly={isReadOnly} />
           </div>
           <div>
             <label>Location</label>
-            <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleChange} />
+            <input type="text" name="location" placeholder="Location" value={formData.location} onChange={handleChange} readOnly={isReadOnly} />
           </div>
         </div>
 
@@ -723,7 +777,7 @@ const ClaimForm = () => {
                 </td> */}
 
                 <td>
-                  {isPdfMode ? (
+                  {isPdfMode || isReadOnly ? (
                     <div style={{ whiteSpace: "pre-wrap", wordWrap: "break-word" }}>
                       {item.purpose}
                     </div>
@@ -739,19 +793,27 @@ const ClaimForm = () => {
                 </td>
 
                 <td>
+                  {isReadOnly ? (
+                     <span>{item.quantity}</span>
+                  ) : (
                   <input
                     type="number"
                     value={item.quantity}
                     onChange={(e) => handleChange(e, index, "quantity")}
                   />
+                  )}
                 </td>
                 <td>
+                  {isReadOnly ? (
+                     <span>{item.unitPrice}</span>
+                  ) : (
                   <input
                     type="text"
                     value={item.unitPrice}
                     onChange={(e) => handleChange(e, index, "unitPrice")}
 
                   />
+                  )}
                 </td>
                 {/* <td>{Number(item.amount || 0).toFixed(2)}</td> */}
 
@@ -772,23 +834,25 @@ const ClaimForm = () => {
 
         </table>
 
-        {/* <div className="add-expense-container">
-          <button onClick={addExpense} className="add-expense-btn no-print">+ Add Expense</button>
-        </div> */}
+        {!isReadOnly && (
+           <div className="add-expense-container">
+               {/* <button onClick={addExpense} className="add-expense-btn no-print">+ Add Expense</button> */}
+           </div>
+        )}
 
         {/* Totals Section (Fixed Position) */}
         <div className="totals">
           <div>
             <label>Advance Received (INR)</label>
-            <input type="number" min="0" name="advanceReceived" value={formData.advanceReceived} onChange={handleChange} />
+            <input type="number" min="0" name="advanceReceived" value={formData.advanceReceived} onChange={handleChange} readOnly={isReadOnly} />
           </div>
           <div>
             <label>Adjustments with Advance (INR)</label>
-            <input type="number" min="0" name="adjustments" value={formData.adjustments} onChange={handleChange} />
+            <input type="number" min="0" name="adjustments" value={formData.adjustments} onChange={handleChange} readOnly={isReadOnly} />
           </div>
           <div>
             <label>Cash to be Returned to Office (INR)</label>
-            <input type="number" min="0" name="cashReturned" value={formData.cashReturned} onChange={handleChange} />
+            <input type="number" min="0" name="cashReturned" value={formData.cashReturned} onChange={handleChange} readOnly={isReadOnly} />
           </div>
         </div>
 
@@ -808,7 +872,7 @@ const ClaimForm = () => {
 
           <div className="approval-field">
             <label>Submitted By:</label>
-            <input type="text" name="employeeName" placeholder="Name" value={formData.employeeName} onChange={handleChange} required />
+            <input type="text" name="employeeName" placeholder="Name" value={formData.employeeName} onChange={handleChange} required readOnly={isReadOnly} />
           </div>
 
           <div className="approval-field">
@@ -816,6 +880,7 @@ const ClaimForm = () => {
             <input
               type="text"
               value={formData.approverName}
+              readOnly={isReadOnly}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -831,29 +896,31 @@ const ClaimForm = () => {
         <div className="approval-section">
           <div className="approval-field">
             <label>Receiver Signature:</label>
-            <input type="text" placeholder="" />
+            <input type="text" placeholder="" readOnly={isReadOnly} />
           </div>
 
           <div className="approval-field">
             <label>Approver Signature:</label>
-            <input type="text" placeholder="" />
+            <input type="text" placeholder="" readOnly={isReadOnly} />
           </div>
         </div>
 
 
 
         <div className='Bills'>
-          <div className="upload-section no-print">
-            <label className="upload-label">Upload Bills</label>
-            <input
-              type="file"
-              accept="application/pdf,image/*"
-              multiple
-              onChange={handleBillUpload}
-              ref={fileInputRef}
-              className="upload-input"
-            />
-          </div>
+          {!isReadOnly && (
+            <div className="upload-section no-print">
+              <label className="upload-label">Upload Bills</label>
+              <input
+                type="file"
+                accept="application/pdf,image/*"
+                multiple
+                onChange={handleBillUpload}
+                ref={fileInputRef}
+                className="upload-input"
+              />
+            </div>
+          )}
 
           {bills.length > 0 && (
             <div className="uploaded-bills">
@@ -871,32 +938,55 @@ const ClaimForm = () => {
                       <Eye size={18} />
                     </button>
 
-                    <button
-                      type="button"
-                      onClick={() => handleDeleteBill(index)}
-                      className="delete-button"
-                      title="Delete"
-                    >
-                      <Trash2 size={18} />
-                    </button>
+                    {!isReadOnly && (
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteBill(index)}
+                        className="delete-button"
+                        title="Delete"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))}
-
             </div>
           )}
         </div>
 
         <div className="add-expense-container">
-          {/* <button onClick={downloadPDF} className="download-btn no-print">Download PDF</button> */}
-          <button
-            className="submit-btn no-print"
-            onClick={handleSubmitClaim}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Submitting..." : "Submit"}
-          </button>
-          <button type="button" className="reset-btn no-print" onClick={handleReset}>Reset</button>
+          {!isReadOnly ? (
+            <>
+              <button
+                className="submit-btn no-print"
+                onClick={handleSubmitClaim}
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </button>
+              <button type="button" className="reset-btn no-print" onClick={handleReset}>Reset</button>
+            </>
+          ) : (
+            <button
+              className="submit-btn no-print"
+              onClick={async () => {
+                try {
+                  const pdfBlob = await generatePDFBlob();
+                  const url = URL.createObjectURL(pdfBlob);
+                  const link = document.createElement("a");
+                  link.href = url;
+                  link.download = `${formData.claimNumber || 'claim'}.pdf`;
+                  link.click();
+                } catch (err) {
+                  console.error(err);
+                  alert("Failed to generate PDF");
+                }
+              }}
+            >
+              Download PDF
+            </button>
+          )}
         </div>
       </main>
     </div>

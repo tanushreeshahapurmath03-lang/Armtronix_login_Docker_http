@@ -4,6 +4,7 @@ import "./Employee.css";
 import "./HeaderSidebar.css";
 import { io } from "socket.io-client";
 import PWAWrapper from "./PWAWrapper"; // Import PWAWrapper
+import { employeeNavigationItems } from "./navigationConfig"; // Import navigation config
 
 
 
@@ -183,16 +184,13 @@ const HeaderSidebar = () => {
       {/* SIDEBAR */}
       <div className={`sidebar ${isSidebarOpen ? "show" : ""}`}>
         <ul>
-          <li><Link to="/git"><i className="fab fa-git-alt"></i> Git</Link></li>
-          <li><Link to="/cloudflare"><i className="fas fa-cloud"></i> Cloudflare</Link></li>
-          <li><Link to="/aigpt"><i className="fas fa-robot"></i> AI/GPT</Link></li>
-          <li><Link to="/annotation"><i className="fas fa-tags"></i> Annotation</Link></li>
-          <li><Link to="/claimform"><i className="fas fa-file-invoice-dollar"></i> Claim Form</Link></li>
-          <li><Link to="/leaveform"><i className="fas fa-calendar"></i> Leave Form</Link></li>
-          {/* <li><Link to="/employeenotifications"><i className="fas fa-bell"></i> My Leave Status</Link></li> */}
-          <li><Link to="/help"><i className="fas fa-question-circle"></i> Help/Guide</Link></li>
-          <li><Link to="/coe_emp"><i className="fas fa-calendar-alt"></i> COE</Link></li>
-
+          {employeeNavigationItems.map((item, index) => (
+            <li key={index}>
+              <Link to={item.path}>
+                <i className={item.icon}></i> {item.label}
+              </Link>
+            </li>
+          ))}
         </ul>
       </div>
     </>
